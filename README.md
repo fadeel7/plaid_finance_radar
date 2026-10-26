@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-444?style=flat-square&logo=flask&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-7%20passing-3fae76?style=flat-square)
+[![tests](https://github.com/fadeel7/plaid_finance_radar/actions/workflows/ci.yml/badge.svg)](https://github.com/fadeel7/plaid_finance_radar/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-888?style=flat-square)
 
 A personal-finance API that links a bank account, then **automatically detects recurring charges** — subscriptions, bills, salary — from raw transaction data, breaks spending down by category, and projects where your balance is heading.
