@@ -1,5 +1,10 @@
 # Finance Radar
 
+![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-444?style=flat-square&logo=flask&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-7%20passing-3fae76?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-888?style=flat-square)
+
 A personal-finance API that links a bank account, then **automatically detects recurring charges** — subscriptions, bills, salary — from raw transaction data, breaks spending down by category, and projects where your balance is heading.
 
 The interesting part is not fetching transactions. It is the detection: bank descriptions are messy (`NETFLIX.COM 8899`, `Verizon Wireless 7560`), amounts drift by cents, and dates wobble by a day or two, so finding what actually repeats takes real work rather than a string match.
@@ -13,43 +18,69 @@ Built with Python and Flask, with bank data from Plaid. Runs in **demo mode with
 - **Detects recurring charges automatically.** No rules list of known merchants — it finds subscriptions and bills by analyzing the transaction stream itself, scores how confident it is, and predicts the next charge date.
 - **Breaks down spending** into categories and shows a monthly cash-flow view.
 - **Projects the balance** six months out, built on the recurring income and expenses it detected.
-- **Visual dashboard** with headline stats, a ranked subscriptions table, and charts.
-
-## The core: how recurring detection works
-
-This is the part worth reading the code for (`analysis/recurring.py`). For each merchant:
-
-1. **Normalize the description** so the same merchant collapses to one key. `NETFLIX.COM 8899 LOS GATOS` and `Netflix.com` both become `netflix` — digits, store numbers, and noise words are stripped.
-2. **Measure the gaps** between charges and test whether they cluster around a known cadence: weekly, biweekly, monthly, quarterly, or yearly (within a tolerance, because real dates wobble).
-3. **Score three independent signals** and combine them into one confidence number:
-   - *interval regularity* — how consistent the spacing is (weighted most heavily),
-   - *amount consistency* — how stable the charge amount is,
-   - *occurrence count* — more repetitions means more certainty.
-4. **Keep it only** if a cadence matched and confidence clears a threshold, then normalize the cost to a monthly figure and predict the next charge.
-
-The result is that a clean monthly subscription is caught with high confidence, while irregular one-off spending at the same merchant (a few random coffee runs) is correctly ignored.
+- **Visual dashboard** with a headline subscription figure, a ranked subscriptions table, and charts.
 
 ## Architecture
 
-Everything downstream of the data — detection, categorization, cash flow — reads a **normalized transaction list** and never knows where it came from. That is the adapter pattern:
+Everything downstream of the data — detection, categorization, cash flow — reads a **normalized transaction list** and never knows where it came from. That is the adapter pattern: adding a third source later (a CSV import, a different aggregator) means writing one class, not touching any analysis code.
 
-```
-         ┌─ SampleSource (synthetic, no keys)
-TransactionSource ─┤
-         └─ PlaidSource  (Plaid sandbox)
-                     │
-                     ▼
-         normalized transactions  ──►  recurring detection
-                                       categorization
-                                       cash-flow + projection
-                                                 │
-                                                 ▼
-                                          Flask JSON API ──► dashboard
-```
+```mermaid
+flowchart TD
+    S["SampleSource<br/>synthetic · no keys"]
+    P["PlaidSource<br/>Plaid sandbox"]
+    N["Normalized transactions<br/>date · amount · name"]
+    R["Recurring detection<br/>analysis/recurring.py"]
+    C["Categorization<br/>analysis/categorize.py"]
+    F["Cash flow + projection<br/>analysis/cashflow.py"]
+    API["Flask JSON API<br/>GET /api/overview"]
+    D["Dashboard<br/>HTML · Chart.js"]
 
-Adding a third source later (a CSV import, a different aggregator) means writing one class, not touching any analysis code.
+    S --> N
+    P --> N
+    N --> R
+    N --> C
+    N --> F
+    R --> API
+    C --> API
+    F --> API
+    API --> D
+```
 
 **A security decision worth calling out:** the Plaid access token — the credential that can read someone's financial data — is created, stored, and used **only on the server**. The browser only ever holds a short-lived public token during linking, which is exchanged server-side for the access token. The sensitive credential never reaches the client.
+
+## The core: how recurring detection works
+
+This is the part worth reading the code for ([`analysis/recurring.py`](analysis/recurring.py)). Transactions are grouped by a normalized merchant key, and each group with at least three charges is tested for a repeating schedule:
+
+```mermaid
+flowchart LR
+    A["Normalize<br/>NETFLIX.COM 8899<br/>→ netflix"]
+    B["Group<br/>by merchant key<br/>(≥ 3 charges)"]
+    C["Measure gaps<br/>days between<br/>consecutive charges"]
+    D{"Cadence?<br/>weekly · biweekly<br/>monthly · quarterly<br/>yearly, ± tolerance"}
+    E["Score<br/>0.5 · interval<br/>+ 0.3 · amount<br/>+ 0.2 · count"]
+    G{"confidence<br/>≥ 0.62?"}
+    H["Classify<br/>income / expense<br/>+ next date<br/>+ monthly cost"]
+    X["Ignored"]
+
+    A --> B --> C --> D
+    D -- no --> X
+    D -- yes --> E --> G
+    G -- no --> X
+    G -- yes --> H
+```
+
+Step by step:
+
+1. **Normalize the description** so the same merchant collapses to one key. `NETFLIX.COM 8899 LOS GATOS` and `Netflix.com` both become `netflix` — digits, store numbers, and noise words are stripped.
+2. **Measure the gaps** between charges and test whether their median clusters around a known cadence (weekly → yearly), within a tolerance, because real dates wobble.
+3. **Score three independent signals** and combine them into one confidence number:
+   - *interval regularity* — how consistent the spacing is (weighted most, `0.5`),
+   - *amount consistency* — how stable the charge amount is (`0.3`),
+   - *occurrence count* — more repetitions means more certainty (`0.2`, saturating at six).
+4. **Keep it only** if a cadence matched and confidence clears `0.62`, then normalize the cost to a monthly figure, predict the next charge, and classify it as income or expense by the sign of the amount.
+
+The result: a clean monthly subscription is caught with high confidence, while irregular one-off spending at the same merchant (a few random coffee runs) is correctly ignored.
 
 ## Running it
 
