@@ -1,0 +1,325 @@
+/* ===========================================================================
+   Finance Radar — a precision readout for money, not a card kit.
+
+   Type     Fraunces (display serif) for headings + the hero figure;
+            IBM Plex Mono for every numeral, label and axis tick;
+            IBM Plex Sans for body prose.
+   Accent   One signal amber, used architecturally (now-marker, the single
+            highlighted category bar, section ticks, focus) — never as wash.
+   Theme    Dark-first instrument panel. Hierarchy from hairlines and scale,
+            not from identical rounded drop-shadow cards.
+   =========================================================================== */
+
+:root {
+  /* near-black instrument field, faint cool-green cast */
+  --bg:        #0a0d0c;
+  --surface:   #10140f00;     /* sections stay flat on the field */
+  --hero:      #11161300;     /* hero reads via its rule + scale, not a box */
+  --panel-ink: #121815;       /* subtle raised fill where one is needed */
+
+  --line:        #1f2825;     /* hairline */
+  --line-strong: #2c3a34;     /* emphasis rule */
+
+  --ink:   #eef2ef;           /* primary text */
+  --ink-2: #c3d0c9;           /* secondary */
+  --muted: #7d918a;           /* labels, axes */
+
+  --income:  #3fae76;         /* cash-flow income — reserved */
+  --expense: #d06a4e;         /* cash-flow expense (red-clay) — reserved */
+  --accent:  #f0b645;         /* the one architectural signal */
+  --accent-dim: #8a6a28;
+  --accent-wash: rgba(240, 182, 69, 0.10);
+
+  --neutral-bar: #37544a;     /* unremarkable category bars */
+
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans:  "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --maxw: 1080px;
+  --r: 4px;                   /* crisp instrument radius, used sparingly */
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(120% 80% at 85% -10%, #0e1411 0%, var(--bg) 60%) fixed,
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ---- accessibility helpers -------------------------------------------------*/
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -48px;
+  background: var(--accent); color: #141007;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 500;
+  padding: 8px 14px; border-radius: var(--r); z-index: 20;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 12px; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---- top bar ---------------------------------------------------------------*/
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 20px 32px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: inline-flex; align-items: center; gap: 11px; }
+.brand-mark { display: inline-flex; color: var(--accent); }
+.r-ring { fill: none; stroke: currentColor; stroke-width: 1.3; opacity: 0.55; }
+.r-dot  { fill: currentColor; }
+.r-sweep {
+  stroke: currentColor; stroke-width: 1.6; stroke-linecap: round;
+  transform-origin: 16px 16px;
+  animation: sweep 4s linear infinite;
+}
+@keyframes sweep { to { transform: rotate(360deg); } }
+
+.brand-name {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.28rem;
+  letter-spacing: -0.015em;
+  font-optical-sizing: auto;
+}
+.brand-name span { color: var(--muted); }
+
+.mode {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em;
+  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 5px 12px 5px 11px;
+}
+.mode-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 36px 32px 48px; }
+
+/* ===========================================================================
+   HERO — the single loud moment
+   =========================================================================== */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 32px 48px;
+  padding: 10px 0 30px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.hero-label {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.hero-label::before {
+  content: ""; width: 20px; height: 2px; background: var(--accent);
+}
+.hero-figure { margin: 0; line-height: 0.92; }
+.hero-value {
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: clamp(3.4rem, 11vw, 7rem);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  display: inline-flex; align-items: baseline;
+}
+.hero-value .cur {
+  font-size: 0.42em; font-weight: 500; color: var(--muted);
+  margin-right: 0.12em; transform: translateY(-0.05em);
+}
+.hero-value .dec { font-size: 0.42em; color: var(--muted); letter-spacing: 0; }
+.hero-note {
+  margin: 20px 0 0;
+  max-width: 46ch;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.hero-aside {
+  margin: 0; display: grid; gap: 1px;
+  background: var(--line);                 /* 1px rules via gap, no boxes */
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  min-width: 232px;
+}
+.aside-item {
+  background: var(--bg);
+  padding: 14px 18px;
+}
+.hero-aside dt {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.03em;
+  color: var(--muted); margin-bottom: 7px;
+}
+.hero-aside dd {
+  margin: 0; font-size: 1.55rem; font-weight: 500; letter-spacing: -0.01em;
+}
+.hero-aside dd.pos { color: var(--income); }
+.hero-aside dd.neg { color: var(--expense); }
+
+/* ===========================================================================
+   Content blocks — flat, hairline-separated, numbered (no ALL-CAPS eyebrows)
+   =========================================================================== */
+.block { padding: 30px 0; border-bottom: 1px solid var(--line); }
+.block:last-of-type { border-bottom: 0; }
+
+.block-head { display: flex; gap: 16px; margin-bottom: 22px; }
+.block-idx {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  padding-top: 0.5rem;
+  position: relative;
+}
+.block-idx::after {
+  content: ""; display: block; width: 1px; height: 14px;
+  background: var(--line-strong); margin: 6px auto 0;
+}
+.block-title h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: 1.4rem;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 0.87rem; }
+
+/* two-up row */
+.block-row { display: grid; grid-template-columns: 1fr 1fr; }
+.block-row .block { padding-right: 0; }
+.block-row .block:first-child {
+  padding-right: 34px; border-right: 1px solid var(--line);
+  margin-right: -1px; padding-left: 0;
+}
+.block-row .block:last-child { padding-left: 34px; }
+
+/* ---- charts ---------------------------------------------------------------*/
+.chart-figure { margin: 0; }
+.chart-box { position: relative; height: 248px; }
+.chart-box.tall { height: 320px; }
+
+.chart-legend {
+  display: flex; gap: 22px; margin-top: 14px;
+  font-family: var(--mono); font-size: 0.74rem; color: var(--muted);
+}
+.chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* ---- subscriptions table --------------------------------------------------*/
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.03em; color: var(--muted);
+  text-align: left; padding: 0 14px 11px; white-space: nowrap;
+  border-bottom: 1px solid var(--line-strong);
+}
+tbody td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap; font-size: 0.9rem;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr { transition: background 0.12s ease; }
+tbody tr:hover { background: var(--panel-ink); }
+
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.merchant { font-weight: 500; color: var(--ink); }
+.charge { color: var(--ink-2); }
+.per-month { color: var(--expense); }
+.next-date { color: var(--muted); }
+
+.cadence-tag {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.02em;
+  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px; padding: 2px 9px;
+}
+
+/* confidence as a compact instrument readout */
+.conf { display: inline-flex; align-items: center; gap: 9px; justify-content: flex-end; }
+.conf-val { font-family: var(--mono); font-size: 0.82rem; color: var(--ink-2); min-width: 34px; }
+.conf-track {
+  width: 46px; height: 4px; border-radius: 999px;
+  background: var(--line-strong); overflow: hidden;
+}
+.conf-track > i { display: block; height: 100%; background: var(--accent); }
+.conf-track > i.mid { background: var(--accent-dim); }
+
+.empty { color: var(--muted); padding: 16px 14px; }
+
+/* ---- footer ---------------------------------------------------------------*/
+.foot {
+  max-width: var(--maxw); margin: 0 auto;
+  display: flex; gap: 6px 18px; flex-wrap: wrap;
+  padding: 22px 32px 40px;
+  border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 0.78rem; font-family: var(--mono);
+}
+
+/* ===========================================================================
+   Responsive
+   =========================================================================== */
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; align-items: start; gap: 24px; }
+  .hero-aside { min-width: 0; grid-template-columns: 1fr 1fr; }
+  .block-row { grid-template-columns: 1fr; }
+  .block-row .block:first-child {
+    padding-right: 0; border-right: 0; margin-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .block-row .block:last-child { padding-left: 0; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 26px 20px 40px; }
+  .topbar { padding: 18px 20px 16px; }
+  .foot { padding: 20px 20px 36px; }
+  .hero-aside { grid-template-columns: 1fr; }
+}
+
+/* ===========================================================================
+   Reduced motion — honour the system preference
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

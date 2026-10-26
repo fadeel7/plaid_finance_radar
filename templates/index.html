@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance Radar</title>
+  <meta name="color-scheme" content="dark" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22" role="presentation" focusable="false">
+          <circle cx="16" cy="16" r="13" class="r-ring" />
+          <circle cx="16" cy="16" r="7" class="r-ring" />
+          <line x1="16" y1="16" x2="16" y2="3" class="r-sweep" />
+          <circle cx="16" cy="16" r="1.6" class="r-dot" />
+        </svg>
+      </span>
+      <span class="brand-name">Finance <span>Radar</span></span>
+    </div>
+    <div class="mode" id="mode-badge" role="status" aria-live="polite">
+      <span class="mode-dot" aria-hidden="true"></span><span id="mode-text">loading…</span>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+
+    <!-- HERO — the monthly subscription burden is the one loud moment -->
+    <section class="hero" aria-labelledby="hero-label">
+      <div class="hero-main">
+        <p class="hero-label" id="hero-label">Monthly subscription burden</p>
+        <p class="hero-figure" aria-describedby="hero-note">
+          <span id="hero-value" class="hero-value">&mdash;</span>
+        </p>
+        <p class="hero-note" id="hero-note">
+          Detected automatically from raw bank transactions &mdash; subscriptions,
+          bills and other charges that quietly repeat every month.
+        </p>
+      </div>
+      <dl class="hero-aside">
+        <div class="aside-item">
+          <dt>Active subscriptions</dt>
+          <dd id="stat-count" class="mono">&mdash;</dd>
+        </div>
+        <div class="aside-item">
+          <dt>Projected monthly net</dt>
+          <dd id="stat-net" class="mono">&mdash;</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- 01 — subscriptions -->
+    <section class="block" aria-labelledby="h-subs">
+      <div class="block-head">
+        <span class="block-idx" aria-hidden="true">01</span>
+        <div class="block-title">
+          <h2 id="h-subs">Detected subscriptions &amp; recurring bills</h2>
+          <p class="sub">Surfaced from raw transactions, ranked by monthly cost.</p>
+        </div>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="h-subs">
+        <table id="subs-table">
+          <thead>
+            <tr>
+              <th scope="col">Merchant</th>
+              <th scope="col">Cadence</th>
+              <th scope="col" class="num">Charge</th>
+              <th scope="col" class="num">Per&nbsp;month</th>
+              <th scope="col" class="num">Next</th>
+              <th scope="col" class="num">Confidence</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="block-row">
+      <!-- 02 — category -->
+      <section class="block" aria-labelledby="h-cat">
+        <div class="block-head">
+          <span class="block-idx" aria-hidden="true">02</span>
+          <div class="block-title">
+            <h2 id="h-cat">Spending by category</h2>
+            <p class="sub">Largest outflow highlighted.</p>
+          </div>
+        </div>
+        <figure class="chart-figure">
+          <div class="chart-box">
+            <canvas id="category-chart" role="img"
+              aria-label="Horizontal bar chart of spending by category."></canvas>
+          </div>
+          <figcaption id="category-summary" class="visually-hidden"></figcaption>
+        </figure>
+      </section>
+
+      <!-- 03 — cash flow -->
+      <section class="block" aria-labelledby="h-cash">
+        <div class="block-head">
+          <span class="block-idx" aria-hidden="true">03</span>
+          <div class="block-title">
+            <h2 id="h-cash">Monthly cash flow</h2>
+            <p class="sub">Income against expenses, month by month.</p>
+          </div>
+        </div>
+        <figure class="chart-figure">
+          <div class="chart-box">
+            <canvas id="cashflow-chart" role="img"
+              aria-label="Grouped bar chart of monthly income versus expenses."></canvas>
+          </div>
+          <figcaption class="chart-legend" id="cashflow-legend"></figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <!-- 04 — projection -->
+    <section class="block" aria-labelledby="h-proj">
+      <div class="block-head">
+        <span class="block-idx" aria-hidden="true">04</span>
+        <div class="block-title">
+          <h2 id="h-proj">6-month balance projection</h2>
+          <p class="sub">If the detected recurring income and expenses continue unchanged.</p>
+        </div>
+      </div>
+      <figure class="chart-figure">
+        <div class="chart-box tall">
+          <canvas id="projection-chart" role="img"
+            aria-label="Line chart projecting account balance over the next six months."></canvas>
+        </div>
+        <figcaption id="projection-summary" class="visually-hidden"></figcaption>
+      </figure>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Demo mode uses synthetic data.</span>
+    <span>Set Plaid sandbox keys to link a real test account.</span>
+  </footer>
+</body>
+</html>
