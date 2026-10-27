@@ -46,7 +46,7 @@ flowchart TD
     API --> D
 ```
 
-**A security decision worth calling out:** the Plaid access token — the credential that can read someone's financial data — is created, stored, and used **only on the server**. The browser only ever holds a short-lived public token during linking, which is exchanged server-side for the access token. The sensitive credential never reaches the client.
+**A security decision worth calling out:** the Plaid access token — the credential that can read someone's financial data — is created, stored, and used **only on the server**. The browser only ever holds a short-lived public token during linking, which is exchanged server-side for the access token. The sensitive credential never reaches the client, and when persistence is enabled it is **encrypted at rest** (Fernet / AES) before it touches the database — only ciphertext is stored.
 
 ## The core: how recurring detection works
 
@@ -99,6 +99,14 @@ python app.py
 ```
 With keys set, the Link endpoints activate and the app pulls real sandbox transactions through the same analysis pipeline.
 
+**Persistence (optional):** by default a linked item lives in memory and is lost on restart. Point `DATABASE_URL` at a PostgreSQL database to persist linked items instead — the access token is encrypted at rest and only the ciphertext is stored.
+```bash
+# in .env
+DATABASE_URL=postgresql://user:password@localhost:5432/finance_radar
+APP_ENCRYPTION_KEY=   # generate one:  python -m services.crypto
+```
+The `linked_items` table is created automatically on first run. With `DATABASE_URL` unset, nothing changes and no database or key is needed.
+
 ## Tests
 
 The detection algorithm is unit-tested — clean subscriptions are caught, irregular spending is ignored, noisy merchant names still group, and small amount/date wobble is tolerated.
@@ -118,7 +126,7 @@ pytest
 
 ## What I'd build next
 
-- Persist linked items and transactions in PostgreSQL (encrypt access tokens at rest).
+- Cache fetched transactions in PostgreSQL (linked items are already persisted, with access tokens encrypted at rest).
 - Register a Plaid webhook so new transactions update detection automatically instead of on fetch.
 - Alert when a new subscription first appears, or when a recurring charge increases.
 

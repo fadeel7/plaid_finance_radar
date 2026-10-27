@@ -3,5 +3,10 @@ python-dotenv==1.0.1
 gunicorn==23.0.0
 pytest==8.3.2
 
+# Optional persistence (used only when DATABASE_URL is set). Imported lazily, so
+# demo mode runs without a database connection.
+psycopg[binary]==3.2.13
+cryptography==43.0.1
+
 # Plaid is optional — it is only needed to link a real account. Demo mode does not
 # import it. To enable Plaid mode:  pip install -r requirements-plaid.txt

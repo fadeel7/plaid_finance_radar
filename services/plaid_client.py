@@ -48,8 +48,15 @@ def create_link_token(client, user_id: str = "demo-user"):
     return client.link_token_create(req)["link_token"]
 
 
-def exchange_public_token(client, public_token: str) -> str:
+def exchange_public_token(client, public_token: str) -> tuple[str, str]:
+    """Exchange a public token for the long-lived access token.
+
+    Returns (access_token, item_id). The item_id identifies the linked bank item
+    and is the stable key we persist against; the access token is encrypted
+    before storage and never leaves the server.
+    """
     from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 
     req = ItemPublicTokenExchangeRequest(public_token=public_token)
-    return client.item_public_token_exchange(req)["access_token"]
+    resp = client.item_public_token_exchange(req)
+    return resp["access_token"], resp["item_id"]

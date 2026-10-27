@@ -17,27 +17,29 @@ from flask import Flask, jsonify, render_template, request
 
 from config import config
 from services.transactions import SampleSource, PlaidSource
+from services.store import build_store
 from analysis.recurring import detect_recurring
 from analysis.categorize import spending_by_category
 from analysis.cashflow import monthly_cashflow, projection
 
 app = Flask(__name__)
 
-# In-memory store for a linked Plaid access token. In production this would be an
-# encrypted per-user record in the database; here one server-side slot is enough to
-# demonstrate that the token never reaches the browser.
-_linked = {"access_token": None}
+# Where linked Plaid items live. With DATABASE_URL set this is PostgreSQL with the
+# access token encrypted at rest; otherwise an in-memory store so demo mode needs no
+# setup. Either way the token stays server-side and never reaches the browser.
+store = build_store(config)
 
 
 def current_source():
     """Pick the active transaction source. A linked Plaid item wins; otherwise demo."""
-    if config.plaid_enabled and _linked["access_token"]:
+    token = store.get_current_token() if config.plaid_enabled else None
+    if token:
         from services.plaid_client import build_client
-        return PlaidSource(build_client(config), _linked["access_token"])
+        return PlaidSource(build_client(config), token)
     return SampleSource()
 
 
-def build_overview(transactions: list[dict]) -> dict:
+def build_overview(transactions: list[dict], mode: str) -> dict:
     recurring = detect_recurring(transactions)
     subs = [r for r in recurring if r.kind == "expense"]
     monthly_sub_cost = round(sum(r.monthly_cost for r in subs), 2)
@@ -46,7 +48,7 @@ def build_overview(transactions: list[dict]) -> dict:
     starting_balance = round(sum(t["amount"] for t in transactions), 2)
 
     return {
-        "mode": "plaid" if (config.plaid_enabled and _linked["access_token"]) else "demo",
+        "mode": mode,
         "transaction_count": len(transactions),
         "headline": {
             "monthly_subscription_cost": monthly_sub_cost,
@@ -67,8 +69,9 @@ def index():
 
 @app.get("/api/overview")
 def overview():
-    transactions = current_source().fetch()
-    return jsonify(build_overview(transactions))
+    source = current_source()
+    mode = "plaid" if isinstance(source, PlaidSource) else "demo"
+    return jsonify(build_overview(source.fetch(), mode))
 
 
 @app.get("/api/health")
@@ -95,10 +98,14 @@ def link_exchange():
     if not public_token:
         return jsonify({"error": "public_token is required"}), 400
     from services.plaid_client import build_client, exchange_public_token
-    _linked["access_token"] = exchange_public_token(build_client(config), public_token)
+    access_token, item_id = exchange_public_token(build_client(config), public_token)
+    store.save_item(item_id, access_token)
     return jsonify({"linked": True})
 
 
 if __name__ == "__main__":
+    # Create the linked_items table on first run when persistence is configured.
+    if config.persistence_enabled:
+        store.init_schema()
     port = int(__import__("os").getenv("PORT", "5000"))
     app.run(host="0.0.0.0", port=port, debug=True)
