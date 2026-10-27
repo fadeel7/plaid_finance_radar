@@ -1,0 +1,14 @@
+# Render Blueprint — deploys Finance Radar as a web service in demo mode with no
+# keys required. Set PLAID_CLIENT_ID / PLAID_SECRET in the dashboard (and add
+# plaid-python via requirements-plaid.txt) to enable real Plaid linking.
+services:
+  - type: web
+    name: finance-radar
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"

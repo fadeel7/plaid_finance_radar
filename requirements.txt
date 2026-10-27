@@ -1,4 +1,7 @@
 Flask==3.0.3
 python-dotenv==1.0.1
-plaid-python==21.0.0
+gunicorn==23.0.0
 pytest==8.3.2
+
+# Plaid is optional — it is only needed to link a real account. Demo mode does not
+# import it. To enable Plaid mode:  pip install -r requirements-plaid.txt
