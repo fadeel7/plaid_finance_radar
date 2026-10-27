@@ -5,6 +5,8 @@
 [![tests](https://github.com/fadeel7/plaid_finance_radar/actions/workflows/ci.yml/badge.svg)](https://github.com/fadeel7/plaid_finance_radar/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-888?style=flat-square)
 
+**▶ Live demo — [plaid-finance-radar.onrender.com](https://plaid-finance-radar.onrender.com)** (demo mode, synthetic data)
+
 A personal-finance API that links a bank account, then **automatically detects recurring charges** — subscriptions, bills, salary — from raw transaction data, breaks spending down by category, and projects where your balance is heading.
 
 The interesting part is not fetching transactions. It is the detection: bank descriptions are messy (`NETFLIX.COM 8899`, `Verizon Wireless 7560`), amounts drift by cents, and dates wobble by a day or two, so finding what actually repeats takes real work rather than a string match.
