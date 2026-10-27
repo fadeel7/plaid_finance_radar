@@ -1,0 +1,6 @@
+# Optional: required only to link a real Plaid account (set PLAID_CLIENT_ID /
+# PLAID_SECRET). Demo mode never imports Plaid, so this is kept out of the base
+# requirements.txt to keep the default deploy lean.
+#
+#   pip install -r requirements-plaid.txt
+plaid-python==21.0.0
